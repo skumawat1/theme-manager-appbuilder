@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Brand CSS Token Manager — Aramark EDS</title>
+  <link rel="stylesheet" href="index.css">
+  <script src="./src/index.js" type="module"></script>
+</head>
+<body>
+
+  <!-- ======================================================
+       App Header
+  ====================================================== -->
+  <header class="app-header">
+    <div class="app-header-logo">
+      <span class="app-header-icon">🎨</span>
+      <span class="app-header-title">Brand CSS Token Manager</span>
+    </div>
+    <div class="app-header-right">
+      <span id="auth-badge" class="auth-badge auth-badge--none" title="IMS authentication status">
+        🔴 No Token
+      </span>
+      <button id="btn-settings" class="icon-btn" title="IMS Token Settings">⚙</button>
+    </div>
+  </header>
+
+  <!-- ======================================================
+       IMS Token Settings Panel
+  ====================================================== -->
+  <div id="settings-panel" class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="settings-panel-inner">
+      <div class="settings-panel-header">
+        <h3 id="settings-title" class="modal-title">⚙ IMS Token Settings</h3>
+        <button id="btn-settings-close" class="icon-btn" title="Close settings">✕</button>
+      </div>
+
+      <p class="settings-description">
+        Enter your Adobe IMS Bearer token and Org ID to authenticate server calls to
+        <code>@adobe/aio-lib-state</code>. These are stored in your browser's
+        <code>localStorage</code> and sent as request headers.
+      </p>
+
+      <div class="form-group">
+        <label for="ims-token-input">IMS Bearer Token</label>
+        <textarea
+          id="ims-token-input"
+          class="ims-token-textarea"
+          placeholder="eyJhbGciOiJSUzI1NiIsIng1dSI6Im..."
+          rows="5"
+          autocomplete="off"
+          spellcheck="false"
+        ></textarea>
+        <small>Paste the full JWT from your <code>aio login</code> or Console session.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="ims-org-id-input">IMS Org ID (<code>x-gw-ims-org-id</code>)</label>
+        <input
+          type="text"
+          id="ims-org-id-input"
+          class="ims-org-input"
+          placeholder="B63321D5692DBE130A495FC5@AdobeOrg"
+          autocomplete="off"
+          spellcheck="false"
+        >
+        <small>Found in Adobe Developer Console under your organisation.</small>
+      </div>
+
+      <div class="settings-actions">
+        <button id="btn-save-token" class="btn btn-primary">💾 Save Token</button>
+        <button id="btn-clear-token" class="btn btn-ghost">🗑 Clear Token</button>
+      </div>
+
+      <div id="settings-status" class="settings-status"></div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       Main Layout — three columns
+  ====================================================== -->
+  <main class="app-layout">
+
+    <!-- ── Column 1: Brand Selector ── -->
+    <aside class="panel panel-brands">
+      <div class="panel-header">
+        <h2 class="panel-title">Brands</h2>
+        <button id="btn-new-brand" class="icon-btn" title="Create new brand">＋</button>
+      </div>
+      <ul id="brand-list" class="brand-list">
+        <!-- populated by JS -->
+      </ul>
+    </aside>
+
+    <!-- ── Column 2: Token Editor ── -->
+    <section class="panel panel-editor">
+      <div class="panel-header">
+        <h2 id="brand-header" class="panel-title">Select or create a brand</h2>
+      </div>
+
+      <!-- Placeholder shown when no brand is selected -->
+      <div id="editor-placeholder" class="editor-placeholder">
+        <span class="placeholder-icon">🏷️</span>
+        <p>Select a brand from the left panel<br>or create a new one to begin editing.</p>
+      </div>
+
+      <!-- Token editor content (hidden until a brand is selected) -->
+      <div id="token-editor-content" class="token-editor-content" style="display:none">
+        <!-- Category tab bar -->
+        <div id="tab-bar" class="tab-bar">
+          <!-- tabs injected by JS -->
+        </div>
+        <!-- Tab panels -->
+        <div id="tab-content" class="tab-content">
+          <!-- panels injected by JS -->
+        </div>
+      </div>
+
+      <!-- Action bar (Save / Export / Publish) -->
+      <div id="action-bar" class="action-bar" style="display:none">
+        <button id="btn-save" class="btn btn-primary" title="Save tokens">
+          💾 Save
+        </button>
+        <button id="btn-export-css" class="btn btn-secondary" title="Download CSS file">
+          ⬇️ Export CSS
+        </button>
+        <button id="btn-publish" class="btn btn-secondary" title="Publish to GitHub">
+          🚀 Publish to GitHub
+        </button>
+      </div>
+    </section>
+
+    <!-- ── Column 3: CSS Preview ── -->
+    <aside class="panel panel-preview">
+      <div class="panel-header">
+        <h2 class="panel-title">CSS Preview</h2>
+      </div>
+      <pre id="css-preview-code" class="css-preview">/* No brand selected */</pre>
+    </aside>
+
+  </main>
+
+  <!-- ======================================================
+       New Brand Modal
+  ====================================================== -->
+  <div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal">
+      <h3 id="modal-title" class="modal-title">Create New Brand</h3>
+      <form id="new-brand-form" novalidate>
+        <div class="form-group">
+          <label for="new-brand-name">Brand name</label>
+          <input
+            type="text"
+            id="new-brand-name"
+            placeholder="e.g. aramark, avendra, freshii"
+            autocomplete="off"
+            required
+          >
+          <small>Lowercase letters, numbers and hyphens only.</small>
+        </div>
+        <div class="form-group">
+          <label for="clone-from-select">Clone tokens from</label>
+          <select id="clone-from-select">
+            <option value="">— start from schema defaults —</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Create Brand</button>
+          <button type="button" id="modal-cancel" class="btn btn-ghost">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       Publish Panel (slide-in overlay)
+  ====================================================== -->
+  <div id="publish-panel" class="publish-panel" role="dialog" aria-modal="true" aria-labelledby="publish-panel-title">
+    <div class="publish-panel-inner">
+      <h3 id="publish-panel-title" class="modal-title">
+        Publish <span id="publish-brand-name"></span> to GitHub
+      </h3>
+      <p class="publish-description">
+        A new branch will be created, <code>brand/&lt;name&gt;.css</code> committed,
+        and a Pull Request raised against the target branch.
+      </p>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="gh-owner">GitHub owner (org / user)</label>
+          <input type="text" id="gh-owner" placeholder="e.g. aramark-org" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="gh-repo">Repository</label>
+          <input type="text" id="gh-repo" placeholder="e.g. aramark-eds" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="gh-base-branch">Base branch (create from)</label>
+          <input type="text" id="gh-base-branch" placeholder="main" value="main">
+        </div>
+        <div class="form-group">
+          <label for="gh-target-branch">Target branch (PR into)</label>
+          <input type="text" id="gh-target-branch" placeholder="main" value="main">
+        </div>
+      </div>
+
+      <div id="publish-result" class="publish-result"></div>
+
+      <div class="modal-actions">
+        <button id="btn-publish-confirm" class="btn btn-primary">🚀 Create PR</button>
+        <button id="btn-publish-cancel" class="btn btn-ghost">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       Loading Overlay
+  ====================================================== -->
+  <div id="loading-overlay" class="loading-overlay" aria-live="polite">
+    <div class="loading-box">
+      <span class="spinner"></span>
+      <span id="loading-message">Loading…</span>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       Toast Notification Container
+  ====================================================== -->
+  <div id="toast-container" class="toast-container" aria-live="assertive"></div>
+
+</body>
+</html>

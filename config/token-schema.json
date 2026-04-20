@@ -1,0 +1,18 @@
+{
+  "colors": {
+    "primary":       { "type": "color",  "default": "#e87722", "label": "Primary Color" },
+    "secondary":     { "type": "color",  "default": "#003865", "label": "Secondary Color" },
+    "background":    { "type": "color",  "default": "#ffffff", "label": "Background" },
+  },
+  "typography": {
+    "fontFamilyBase":    { "type": "string", "default": "\"Source Sans Pro\", Arial, sans-serif", "label": "Font Family" },
+    "fontSizeBase":      { "type": "size",   "default": "16px", "label": "Base Font Size" },
+    "fontSizeSmall":     { "type": "size",   "default": "12px", "label": "Small Font Size" },
+  },
+  "breakpoints": {
+    "mobile":  { "type": "size", "default": "480px",  "label": "Mobile" },
+    "tablet":  { "type": "size", "default": "768px",  "label": "Tablet" },
+    "desktop": { "type": "size", "default": "1024px", "label": "Desktop" },
+    "wide":    { "type": "size", "default": "1280px", "label": "Wide" }
+  }
+}

@@ -1,0 +1,60 @@
+application:
+  actions: actions
+  web: web-src
+  runtimeManifest:
+    packages:
+      AramarkEDSTaskrunner:
+        license: Apache-2.0
+        actions:
+          manage-tokens:
+            function: actions/manage-tokens/index.js
+            web: "yes"
+            runtime: nodejs:22
+            inputs:
+              LOG_LEVEL: debug
+            annotations:
+              require-adobe-auth: true
+              final: true
+
+          publish-tokens:
+            function: actions/publish-tokens/index.js
+            web: "yes"
+            runtime: nodejs:22
+            inputs:
+              LOG_LEVEL: debug
+              GITHUB_TOKEN: $GITHUB_TOKEN
+            annotations:
+              require-adobe-auth: true
+              final: true
+
+          github-branch-pr:
+            function: actions/github-branch-pr/index.js
+            web: "yes"
+            runtime: nodejs:22
+            inputs:
+              LOG_LEVEL: debug
+              GITHUB_TOKEN: $GITHUB_TOKEN
+            annotations:
+              require-adobe-auth: true
+              final: true
+
+          publish-events:
+            function: actions/publish-events/index.js
+            web: "yes"
+            runtime: nodejs:22
+            inputs:
+              LOG_LEVEL: debug
+              apiKey: $SERVICE_API_KEY
+            annotations:
+              require-adobe-auth: true
+              final: true
+
+          sample-app:
+            function: actions/sample-app/index.js
+            web: "yes"
+            runtime: nodejs:22
+            inputs:
+              LOG_LEVEL: debug
+            annotations:
+              require-adobe-auth: true
+              final: true
